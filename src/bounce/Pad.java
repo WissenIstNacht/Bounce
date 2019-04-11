@@ -5,8 +5,8 @@ public class Pad {
 	
 	private PApplet parent;
 	
-	float xPos = 375, yPos = 6;
-	float w = 150, h = 20;
+	float xPos = 350, yPos = 6;
+	float w = 100, h = 20;
 	
 	public Pad(PApplet parent_) 
 	{

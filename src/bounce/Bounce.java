@@ -9,6 +9,10 @@
 	
 	- Basic Implementation:
 		Status: DONE @date 09.04.2019
+	- Improve player movement
+		Status: DONE @date 11.04.2019
+	- Improve Bouncing feel
+		Status: DONE d@date 11.04.2019
 
 ************************************************************************/
 
@@ -34,6 +38,7 @@ public class Bounce extends PApplet {
 	
 	public void settings() {
 		size(750,600);
+		smooth();
 	}
 	
 	public void setup() {
@@ -49,7 +54,7 @@ public class Bounce extends PApplet {
 			WelcomeScreen();
 			break;
 		case INPROGRESS:
-			runGame();
+			updateGame();
 			break;
 		case OVER:
 			gameOverScreen();
@@ -60,10 +65,12 @@ public class Bounce extends PApplet {
 	public void keyPressed() {
 		switch (keyCode) {
 		case LEFT:
-			player.moveSide(-1);
+			player.isMoving = true;
+			player.direction = -1;
 			break;
 		case RIGHT:
-			player.moveSide(1);
+			player.isMoving = true;
+			player.direction = 1;
 			break;
 		case ENTER:
 			/* start the game when in welcome state */
@@ -80,6 +87,19 @@ public class Bounce extends PApplet {
 			exit();
 		default:
 			break;
+		};
+	}
+	
+	public void keyReleased() {
+		switch (keyCode) {
+		case LEFT:
+			player.isMoving = false;
+			return;
+		case RIGHT:
+			player.isMoving = false;
+			return;	
+		default:
+			break;
 		}
 	}
 	
@@ -93,9 +113,11 @@ public class Bounce extends PApplet {
 	}
 	
 	boolean isColliding() {
-		
 		boolean xCondition = player.xPos >= pad.xPos;
-		xCondition = xCondition && player.xPos + player.size <= pad.xPos + pad.w;
+		xCondition = xCondition && player.xPos + player.size/2 <= pad.xPos + pad.w;
+		if(xCondition) {
+			background(0x00FF00);
+		}
 		
 		boolean yCondition = player.yPos - player.size/2 <= pad.yPos+pad.h;
 		
@@ -115,20 +137,22 @@ public class Bounce extends PApplet {
 		text("HI", width/2, height/2);
 	}
 	
-	public void runGame() {
+	public void updateGame() {
 		background(0);
 		scale(1,-1);
 		translate(0, -height);
 		
 		/* Update game */
 		boolean b = isColliding();
-		if(b) {
-			System.out.println("true");
-		}
+		
+		player.moveHor();
 		player.moveVert(b);
 		pad.move(b);
 		
-		currState = isOver() ? GameState.OVER : GameState.INPROGRESS;
+		if(!b) {
+			currState = isOver() ? GameState.OVER : GameState.INPROGRESS;
+		}
+		
 		
 		/* Display objects */
 		pad.show();
@@ -142,7 +166,6 @@ public class Bounce extends PApplet {
 		text("GAME OVER!", width/2- 100, height/2);
 	}
 	
-
 	/*******************************************************************************/
 	/*                MAIN                                                         */
 	/*******************************************************************************/

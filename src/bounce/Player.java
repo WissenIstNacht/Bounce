@@ -5,10 +5,15 @@ public class Player {
 	
 	private PApplet parent;
 	
+	boolean isMoving;
+	int direction;
+	float g;
+
+	
 	int size = 50;
 	float xPos, yPos;
-	float xVel = 5;
-	float ySpeed = 3;
+	float xVel = 2;
+	float ySpeed;
 	float yVel;
 	
 	
@@ -19,15 +24,18 @@ public class Player {
 		parent = parent_;
 		xPos = parent.width/2;
 		yPos = 300;
-		yVel = -1;
+		yVel = 0;
+		g = -1.0f/30;
 	}
 	
 	/** Moves the player on user input. Direction can be only 1 (right) or -1 (left).
 	 * 
 	 * @param dir	integer in {-1,1}.
 	 */
-	public void moveSide(int dir){
-		xPos += dir*xVel;
+	public void moveHor(){
+		if(isMoving) {
+			xPos += direction*xVel;
+		}
 	}
 	
 	/** Moves the player vertically. Direction depends on environment (collision with
@@ -36,14 +44,15 @@ public class Player {
 	 * @param collision		true iff player just collided with pad
 	 */
 	public void moveVert(boolean collision) {
-		if(yPos > parent.height*0.75) {
-			yVel = -1;
-		}
+		System.out.println(g);
+
 		if(collision) {
-			yVel = 1;
+			yVel *= -1;
+			yPos = 55;
+		}else {
+			yVel += g;
+			yPos += yVel;
 		}
-		System.out.println(yVel);
-		yPos += yVel*ySpeed;
 	}
 	
 	public void show() {
