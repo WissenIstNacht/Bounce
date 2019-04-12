@@ -8,23 +8,37 @@
 	The pad however moves randomly after each bounce.
 	
 	- Basic Implementation:
-		Status: DONE @date 09.04.2019
+		DONE @date 09.04.2019
 	- Improve player movement
-		Status: DONE @date 11.04.2019
+		DONE @date 11.04.2019
 	- Improve Bouncing feel
-		Status: DONE d@date 11.04.2019
+		DONE @date 11.04.2019
+	- Fix Collision
+		DONE @date 11.04.2019
+	- Add Screens
+		DONE @date 11.04.2019
+	- Wrap around walls
+		DONE @date 12.04.2019
 
 ************************************************************************/
 
 package bounce;
 
+import controlP5.Button;
+import controlP5.ControlP5;
 import processing.core.PApplet;
-
 
 public class Bounce extends PApplet {
 
+	float wp, hp;
+	int bg;
+	
+	Button b_start;
+	ControlP5 gui;
+	
 	Player player;
 	Pad pad;
+	
 	enum GameState{
 		WELCOME,
 		INPROGRESS,
@@ -42,10 +56,19 @@ public class Bounce extends PApplet {
 	}
 	
 	public void setup() {
-		background(0);
+		bg = color(random(255), random(255), random(255));
+		background(bg);
 		frameRate(60);
+		
+		wp = width/100f;
+		hp = height/100f;
+		
+		gui = new ControlP5(this);
+		b_start = new Button(gui, "start button");
+		b_start.setPosition(38*wp, 60*hp)
+			.setCaptionLabel("START GAME!")
+			.setSize(round(24*wp), round(15*hp));
 		currState = GameState.WELCOME;
-		setGame();
 	}
 
 	public void draw() {
@@ -71,12 +94,6 @@ public class Bounce extends PApplet {
 		case RIGHT:
 			player.isMoving = true;
 			player.direction = 1;
-			break;
-		case ENTER:
-			/* start the game when in welcome state */
-			if(currState == GameState.WELCOME) {
-				currState = GameState.INPROGRESS;
-			}
 			break;
 		case 'R':
 			/* Restart the game */
@@ -112,17 +129,7 @@ public class Bounce extends PApplet {
 		pad = new Pad(this);
 	}
 	
-	boolean isColliding() {
-		boolean xCondition = player.xPos >= pad.xPos;
-		xCondition = xCondition && player.xPos + player.size/2 <= pad.xPos + pad.w;
-		if(xCondition) {
-			background(0x00FF00);
-		}
-		
-		boolean yCondition = player.yPos - player.size/2 <= pad.yPos+pad.h;
-		
-		return xCondition && yCondition;
-	}
+	
 	
 	public boolean isOver() {
 
@@ -134,36 +141,63 @@ public class Bounce extends PApplet {
 	}
 
 	public void WelcomeScreen(){
-		text("HI", width/2, height/2);
+		textSize(60);
+		textAlign(CENTER, CENTER);
+		text("Welcome to Bounce!", width/2, 25*hp);
+		textSize(25);
+		textAlign(CENTER, CENTER);
+		text("Use the left/right arrow keys to move", width/2, 40*hp);
+		
+		if(b_start.isPressed()) {
+			if(currState == GameState.WELCOME) {
+				currState = GameState.INPROGRESS;
+			}
+			setGame();
+			b_start.hide();
+		}
 	}
 	
 	public void updateGame() {
-		background(0);
+		background(bg);
 		scale(1,-1);
 		translate(0, -height);
 		
 		/* Update game */
-		boolean b = isColliding();
+		boolean b = player.isColliding(pad);
 		
-		player.moveHor();
-		player.moveVert(b);
+		player.move(b);
 		pad.move(b);
 		
 		if(!b) {
 			currState = isOver() ? GameState.OVER : GameState.INPROGRESS;
+		}else {
+			bg = color(random(255), random(255), random(255));
+			player.score++;
 		}
-		
 		
 		/* Display objects */
 		pad.show();
 		player.show();
+		
+		translate(0, height);
+		scale(1,-1);
+		textAlign(RIGHT, TOP);
+		String score = String.valueOf(player.score);
+		textSize(30);
+		text(score, width, 0);
+		
 	}
 	
 	public void gameOverScreen(){
-		background(255,0,0);
-		scale(1,-1);
-		textSize(50);
-		text("GAME OVER!", width/2- 100, height/2);
+		background(bg);
+		textSize(60);
+		textAlign(CENTER, CENTER);
+		text("GAME OVER!", width/2, 25*hp);
+		textSize(25);
+		textAlign(CENTER, CENTER);
+		text("Press 'r' to restar the game, 'ESC' to quit.", width/2, 40*hp);
+		
+		
 	}
 	
 	/*******************************************************************************/

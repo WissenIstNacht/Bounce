@@ -9,6 +9,7 @@ public class Player {
 	int direction;
 	float g;
 
+	int score = 0;
 	
 	int size = 50;
 	float xPos, yPos;
@@ -25,27 +26,24 @@ public class Player {
 		xPos = parent.width/2;
 		yPos = 300;
 		yVel = 0;
-		g = -1.0f/30;
+		g = -1.0f/15;
 	}
 	
-	/** Moves the player on user input. Direction can be only 1 (right) or -1 (left).
-	 * 
-	 * @param dir	integer in {-1,1}.
-	 */
-	public void moveHor(){
-		if(isMoving) {
-			xPos += direction*xVel;
-		}
-	}
-	
-	/** Moves the player vertically. Direction depends on environment (collision with
-	 * pad or sky).
+	/** Determines next location of player, taking into account collision and 
+	 * wrapping around walls.
 	 * 
 	 * @param collision		true iff player just collided with pad
 	 */
-	public void moveVert(boolean collision) {
-		System.out.println(g);
-
+	public void move(boolean collision) {
+		if(isMoving) {
+			xPos += direction*xVel;
+		}
+		if(xPos < 0) {
+			xPos = parent.width - xPos;
+		}else if(xPos > parent.width) {
+			xPos = xPos - parent.width;
+		}
+		
 		if(collision) {
 			yVel *= -1;
 			yPos = 55;
@@ -53,6 +51,21 @@ public class Player {
 			yVel += g;
 			yPos += yVel;
 		}
+	}
+	
+	/** Determines whether player is making contact with pad.
+	 * 
+	 * @param pad
+	 * 
+	 * @return boolean	true iff southern most point of player touches top of pad.
+	 */
+	boolean isColliding(Pad pad) {
+		boolean xCondition = xPos >= pad.xPos;
+		xCondition = xCondition && xPos <= pad.xPos + pad.w;
+		
+		boolean yCondition = yPos - size/2 <= pad.yPos+pad.h;
+		
+		return xCondition && yCondition;
 	}
 	
 	public void show() {
